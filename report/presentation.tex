@@ -1,0 +1,83 @@
+\documentclass{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\useoutertheme{split}
+\useinnertheme{circles}
+\usepackage{xcolor}
+\usepackage{mathrsfs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{animate}
+\usepackage{caption}
+\captionsetup[figure]{font=tiny}
+
+\usepackage[
+    backend=biber,
+    style=alphabetic,
+    sorting=ynt
+]{biblatex}
+\addbibresource{bibliography.bib}
+
+% --- Couleurs CS ---
+\definecolor{CSred}{RGB}{160,32,60}
+\definecolor{CSgrey}{RGB}{136,121,150}
+\definecolor{UPSred}{RGB}{97,21,58}
+\setbeamercolor{titlelike}{bg=CSred}
+\setbeamerfont{title}{series=\bfseries}
+\setbeamercolor{palette primary}{bg=CSred,fg=white}
+\setbeamercolor{palette secondary}{bg=CSred,fg=white}
+\setbeamercolor{palette tertiary}{bg=CSgrey,fg=white}
+\setbeamercolor{palette quaternary}{bg=CSgrey,fg=white}
+\setbeamercolor{structure}{fg=CSgrey}
+
+\title[TDL]{Theoretical Principles of Deep Learning}
+\subtitle{Presentation - Paper Reading Assignment}
+\author[Jamal]{Adonis~JAMAL\\On Exact Computation with an Infinitely Wide Neural Net}
+\institute[CentraleSupélec]{CentraleSupélec - MDS 2025-2026}
+\date[February 2nd 2026]{February 2nd, 2026}
+
+\titlegraphic{
+    \includegraphics[height=1.2cm]{img/Logo_CentraleSupelec.svg.png}
+}
+
+\begin{document}
+
+\frame{\titlepage}
+
+
+
+
+% ==============================================================================
+% SECTION : SECTION
+% ==============================================================================
+\section{section}
+\subsection{subsection}
+\begin{frame}{Frame}
+    \cite{main}
+\end{frame}
+
+
+
+
+% ==============================================================================
+% SECTION : BIBLIOGRAPHY
+% ==============================================================================
+\subsection{Bibliography}
+\begin{frame}[allowframebreaks]{Bibliography}
+    \frametitle{Bibliography}
+    \printbibliography[heading=none]
+\end{frame}
+
+
+% ==============================================================================
+% SECTION : APPENDIX
+% ==============================================================================
+\subsection{Appendix}
+\begin{frame}{Appendix}
+   
+\end{frame}
+
+
+\end{document}
