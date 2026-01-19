@@ -14,3 +14,10 @@
 *.toc
 
 .venv/
+archive/
+__pycache__/
+
+data/
+
+documents/
+*.md
