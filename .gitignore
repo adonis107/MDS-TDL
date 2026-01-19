@@ -12,20 +12,13 @@
 *.snm
 *.synctex.gz
 *.toc
+*.xsim
 
 .venv/
 archive/
 __pycache__/
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 data/
 
-=======
->>>>>>> 22d1f47 (coded cntk + library, added implementation and analysis)
-=======
-data/
-
->>>>>>> 37ce088 (Updated model)
 documents/
 *.md
