@@ -112,7 +112,23 @@ The paper describes two variants of the kernel:
 % SECTION : DATA AND EXPERIMENTAL SETUP
 % ==============================================================================
 \section{Data and Experimental Setup}
+\subsection{Dataset and Preprocessing}
+We utilized the CIFAR-10 dataset, a standard benchmark for image classification containing over $50,000$ training and $10,000$ test images across $10$ classes. Consistent with the paper's protocol, we applied no data augmentation to ensure a fair comparison between kernel methods and finite networks.
 
+The labels were processed using a specific encoding scheme to improve regression performance: the target label $y_c$ is set to $0.9$ for the correct class, and $-0.1$ for incorrect classes. This zero-mean centering helps in the context of Mean Squared Error (MSE) regression.
+
+\subsection{Experimental Reproduction Setup}
+While the original paper scales the exact CNTK computation to the full CIFAR-10 using optimized CUDA kernels on NVIDIA Testa V100 GPUs, reproducing the full-scale experiment is computationally prohibitive for this project. We therefore adapted the experimental scale while strictly preserving the algorithmic implementation.
+
+\begin{itemize}
+      \item \textbf{Data Subset:} We restricted the dataset to a subset of $N_{train} = 200$ and $N_{test} = 100$ images. This allows us to verify the correctness of the CNTK implementation and observe depth-dependent behaviors without requiring extensive computational resources.
+      \item \textbf{Kernel Regression:} Classification is performed via exact kernel regression. For a test point $x_{test}$, the prediction $f^*(x_{test})$ is computed as:
+            \begin{equation}
+                  f^*(x_{test}) = \text{ker}(x_{test}, X_{train}) (H^*)^{-1} Y_{train}
+            \end{equation}
+            where $H^*$ is the kernel matrix on the training data. The class with the highest predicted value is selected.
+      \item \textbf{Implementation:} We implemented the recursive CNTK formulas using PyTorch with GPU acceleration to handle the tensor operations required for the covariance propagation.
+\end{itemize}
 
 
 % ==============================================================================
