@@ -83,9 +83,29 @@ In this section, we detail the algorithmic contribution of the paper: the exact 
 The core contribution of the paper is an efficient algorithm to compute the CNTK kernel matrix $\Theta^{(L)}(x, x')$ for two inputs $x$ and $x'$. For a network of depth $L$, the computation relies on a dynamic programming approach that recursively propagates covariance matrices through the layers.
 
 \subsection{Covariance Propagation}
+For a convolutional network, the kernel computation requires tracking two quantities layer-by-layer:
+\begin{enumerate}
+      \item $\Sigma^{(h)}(x, x')$: The covariance of the pre-activations at layer $h$.
+      \item $\dot{\Sigma}^{(h)}(x, x')$: The derivative covariance, which captures the backward pass dynamics.
+\end{enumerate}
 
+For ReLU activation $\sigma(z) = \max(0, z)$, the paper leverages closed-form arc-cosine kernels to compute these expectations efficiently without explicit integration. Given the covariance matrix $\Lambda$ from the previous layer with correlation $\rho$, the key recursive formulas are:
+\begin{equation}
+      \mathbb{E}[\sigma(u)\sigma(v)] = \frac{\sqrt{\Sigma_{11}\Sigma_{22}}}{2\pi} \left( \rho (\pi - \arccos \rho) + \sqrt{1 - \rho^2} \right)
+\end{equation}
+
+\begin{equation}
+      \mathbb{E}[\sigma'(u)\sigma'(v)] = \frac{1}{2\pi} (\pi - \arccos \rho)
+\end{equation}
+
+These formulas allow the algorithm to compute the kernel for layer $h$ directly from the covariance of layer $h - 1$ via entry-wise matrix operations, making the process GPU-efficient.
 
 \subsection{CNTK-Vanilla vs. CNTK-GAP}
+The paper describes two variants of the kernel:
+\begin{itemize}
+      \item \textbf{CNT-Vanilla (CNTK-V):} Corresponds to a standard convolutional network ending with a fully connected layer.
+      \item \textbf{CNTK-GAP:} Includes a Global Average Pooling (GAP) operation before the final classification. This involves taking the mean over spatial dimensions, which significantly alters the final kernel $\Theta^{(L)}$ by accounting for cross-variances between all spatial patches.
+\end{itemize}
 
 
 % ==============================================================================
