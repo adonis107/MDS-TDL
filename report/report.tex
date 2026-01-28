@@ -38,21 +38,54 @@ Adonis JAMAL \email{adonis.jamal@student-cs.fr}
 \section{Introduction and Contributions}
 The theoretical study of deep learning often relies on the limit of infinite width to provide tractable analytical tools for understanding optimization and generalization \cite{main}. While the correspondence between infinite fully-connected networks and Gaussian Processes is well-established, the Neural Tangent Kernel (NTK) introduced by Jacot et al. \cite{jacot2020NTK} characterized the evolution of fully-trained networks in this regime. The paper \textit{On Exact Computation with an Infinitely Wide Neural Net} extends this framework to Convolutional Neural Networks (CNNs), addressing the computational infeasibility of evaluating kernels for modern architectures with pooling layers. The authors pose a central question: can the "infinite limit" of classic architectures like VGG or AlexNet achieve competitive classification performance on standard datasets such as CIFAR-10? To answer this, they derive the Convolutional NTK (CNTK) and provide the first efficient, exact algorithm for its computation, proving that a fully-trained, sufficiently wide network is equivalent to the kernel regression predictor using CNTK.
 
-In this report, we focus on the paper's algorithmic contribution: the exact and efficient computation of the CNTK. We first detail the theoretical recursive formulas that allow for the exact evaluation of convolutional kernels with and without Global Average Pooling (GAP). We then describe our reproduction of the paper's main experimental result, implementing the exact dynamic programming algorithm to evaluate CNTK performance on the CIFAR-10 dataset. Our experiments confirm the significant performance gap between vanilla CNTK and CNTK-GAP architectures. Finally, we experimentally illustrate the authors' findings regarding network depth, verifying the distinct performance characteristics of infinite-width architectures compared to their finite counterparts across varying depths.
+In this report, we focus on the paper's algorithmic contribution: the exact and efficient computation of the CNTK. We first detail the theoretical recursive formulas that allow for the exact evaluation of convolutional kernels with and without Global Average Pooling (GAP). We then describe our reproduction of the paper's main experimental result  on a subset of the data, implementing the exact dynamic programming algorithm to evaluate CNTK performance on the CIFAR-10 dataset. Our experiments confirm the significant performance gap between vanilla CNTK and CNTK-GAP architectures. Finally, we experimentally illustrate the authors' findings regarding network depth, verifying the distinct performance characteristics of infinite-width architectures compared to their finite counterparts across varying depths.
 
 
 % ==============================================================================
 % SECTION : PAPER OVERVIEW
 % ==============================================================================
 \section{Paper Overview}
+\subsection{The Setting: From Finite Networks to Kernel Limits}
+The paper operates in the regime of extreme over-parametrization, specifically the limit where the width of the neural network (number of channels in convolutional layers or nodes in fully-connected layers) tends to infinity.
 
+Historically, the connection between infinite-width networks and kernel methods was studied using Gaussian Processes (GPs). In this "weakly-trained" regime, only the last layer is optimized while hidden layers remain fixed at their random initialization. However, this view fails to capture the dynamics of modern deep learning, where all layers are trained simultaneously.
+
+The authors build upon the "fully-trained" regime introduced in \cite{jacot2020NTK}, known as the Neural Tangent Kernel (NTK). In this setting, gradient descent on an Infinitely wide network is equivalent to kernel regression with a deterministic kernel $\Theta$, defined as:
+\begin{equation}
+    \Theta(x, x') = \mathbb{E}_{\theta \sim \mathcal{W}} \left\langle \frac{\partial f(\theta, x)}{\partial \theta}, \frac{\partial f(\theta, x')}{\partial \theta} \right\rangle
+\end{equation}
+where $f(\theta, x)$ is the network output and $\mathcal{W}$ is the initialization distribution. THis setting provides a theoretical bridge to understand why over-parametrized networks optimize easily and generalize well.
+
+\subsection{The Question: Feasibility and Performance of Convolutional Kernels}
+Prior to this work, the exact computation of the NTK for Convolutional Neural Networks (CNTK) was considered computationally infeasible for large datasets like CIFAR-10. Researchers resorted to Monte Carlo approximations or finite-width proxies, which introduced variance and degraded performance \cite{novak2019bayesian}.
+
+The authors seek to answer two primary questions:
+\begin{itemize}
+      \item \textbf{Algorithmic Feasibility:} Can we derive an efficient, exact algorithm to compute the CNTK for standard architectures (including pooling layers) without relying on approximations?
+      \item \textbf{Performance Gap:} How well do these "infinite" CNNs actually perform compared to their finite counterparts such as AlexNet and VGG-19? Does the infinite width limit capture the power of deep learning?
+\end{itemize}
+
+\subsection{The Solution: CNTK and Exact Algorithms}
+The paper provides a three-fold solution:
+\begin{itemize}
+      \item \textbf{Algorithmic:} They derive an exact dynamic programming algorithm to compute the CNTK for convolutional networks, utilizing the specific properties of ReLU activations to enable efficient GPU implementation.
+      \item \textbf{Theoretical:} They provide a non-asymptotic proof that fully-trained, sufficiently wide networks are equivalent to kernel regression with the CNTK.
+      \item \textbf{Empirical:} They establish a new benchmark for kernel methods, achieving $\approx 77\%$ accuracy on CIFAR-10 with an 11-layer architecture, narrowing the gap between kernel methods and finite deep networks.
+\end{itemize}
 
 
 % ==============================================================================
 % SECTION : METHODOLOGY
 % ==============================================================================
-\section{Methodology}
+\section{Methodology: Exact Recursive Computation}
+In this section, we detail the algorithmic contribution of the paper: the exact computation of the Convolutional Neural Tangent Kernel (CNTK).
 
+The core contribution of the paper is an efficient algorithm to compute the CNTK kernel matrix $\Theta^{(L)}(x, x')$ for two inputs $x$ and $x'$. For a network of depth $L$, the computation relies on a dynamic programming approach that recursively propagates covariance matrices through the layers.
+
+\subsection{Covariance Propagation}
+
+
+\subsection{CNTK-Vanilla vs. CNTK-GAP}
 
 
 % ==============================================================================

@@ -19,9 +19,7 @@ def load_cifar10(n_train: int = 2000, n_test: int = 1000):
         X_train, Y_train, X_test, Y_test as torch tensors
     """
     # Convert to tensor and normalize
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-    ])
+    transform = transforms.Compose([transforms.ToTensor(),])
     
     # Load datasets
     train_dataset = datasets.CIFAR10(root='../data', train=True, download=True, transform=transform)
@@ -49,7 +47,8 @@ def load_cifar10(n_train: int = 2000, n_test: int = 1000):
     X_train = (X_train - mean) / (std + 1e-8)
     X_test = (X_test - mean) / (std + 1e-8)
     
-    # Convert labels to one-hot with scaling [-1/(K-1), 1] for K=10 classes
+    # Convert labels
+    # For a label c, its encoding is -0.1*1 + e_c (a vector of -0.1 with 0.9 at index c)
     num_classes = 10
     Y_train = torch.zeros(n_train, num_classes)
     Y_train.fill_(-0.1)
