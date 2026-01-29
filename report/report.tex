@@ -38,7 +38,7 @@ Adonis JAMAL \email{adonis.jamal@student-cs.fr}
 \section{Introduction and Contributions}
 The theoretical study of deep learning often relies on the limit of infinite width to provide tractable analytical tools for understanding optimization and generalization \cite{main}. While the correspondence between infinite fully-connected networks and Gaussian Processes is well-established, the Neural Tangent Kernel (NTK) introduced by Jacot et al. \cite{jacot2020NTK} characterized the evolution of fully-trained networks in this regime. The paper \textit{On Exact Computation with an Infinitely Wide Neural Net} extends this framework to Convolutional Neural Networks (CNNs), addressing the computational infeasibility of evaluating kernels for modern architectures with pooling layers. The authors pose a central question: can the "infinite limit" of classic architectures like VGG or AlexNet achieve competitive classification performance on standard datasets such as CIFAR-10? To answer this, they derive the Convolutional NTK (CNTK) and provide the first efficient, exact algorithm for its computation, proving that a fully-trained, sufficiently wide network is equivalent to the kernel regression predictor using CNTK.
 
-In this report, we focus on the paper's algorithmic contribution: the exact and efficient computation of the CNTK. We first detail the theoretical recursive formulas that allow for the exact evaluation of convolutional kernels with and without Global Average Pooling (GAP). We then describe our reproduction of the paper's main experimental result  on a subset of the data, implementing the exact dynamic programming algorithm to evaluate CNTK performance on the CIFAR-10 dataset. Our experiments confirm the significant performance gap between vanilla CNTK and CNTK-GAP architectures. Finally, we experimentally illustrate the authors' findings regarding network depth, verifying the distinct performance characteristics of infinite-width architectures compared to their finite counterparts across varying depths.
+In this report, we focus on the paper's algorithmic contribution: the exact and efficient computation of the CNTK. We first detail the theoretical recursive formulas that allow for the exact evaluation of convolutional kernels with and without Global Average Pooling (GAP). We then describe our reproduction of the paper's main experimental result  on a subset of the data, implementing the exact dynamic programming algorithm to evaluate CNTK performance on the CIFAR-10 dataset. Our experiments confirm the significant performance gap between vanilla CNTK and CNTK-GAP architectures. Finally, we experimentally illustrate the authors' findings regarding network depth, verifying the distinct performance characteristics of infinite-width architectures compared to their finite counterparts across varying depths. The full code is available at \url{https://github.com/adonis107/MDS-TDL}.
 
 
 % ==============================================================================
@@ -135,15 +135,63 @@ While the original paper scales the exact CNTK computation to the full CIFAR-10 
 % SECTION : RESULTS
 % ==============================================================================
 \section{Results}
+\subsection{Validation of Exact CNTK Implementation}
+We first validated our implementation by comparing the performance of the Vanilla (CNTK-V) and Global Average Pooling (CNTK-GAP) kernels at a fixed depth of $6$. Table \ref{tab:comparison} presents our reproduced results on the reduced dataset ($N_{train} = 200$, $N_{test} = 100$) alongside the reference results from the original paper.
 
+\begin{table}[h]
+      \centering
+      \begin{tabular}{@{}lccc@{}}
+            \toprule
+            \textbf{Method} & \textbf{Depth} & \textbf{Paper Acc.} & \textbf{Reproduced Acc.} \\ \midrule
+            CNTK-V & 6 & 66.03\% & 25.00\% \\
+            CNTK-GAP & 6 & 76.73\% & 37.00\% \\ \bottomrule
+      \end{tabular}
+      \caption{Comparison of classification accuracy between original paper results (full CIFAR-10) and our reproduction (subset).}
+      \label{tab:comparison}
+\end{table}
+
+While the absolute accuracy is lower due to the reduced training set size (kernel methods are highly data-dependent), our results successfully reproduce the key structural finding of the paper: the Global Average Pooling (GAP) operation provides a significant performance boost. In our experiments, GAP yielded a $48\%$ relative improvement over the vanilla architecture. This is considerably higher than the $8 - 10\%$ improvement reported in the paper, likely due to the small dataset size amplifying the effect of pooling.
+
+\subsection{Depth Gap Analysis}
+To investigate the effect of depth on infinite-width networks, we evaluated both architectures across depths $L \in \{3, 4, 6, 11\}$. The results are visualized in Figure \ref{fig:depth_gap}.
+
+\begin{figure}[H]
+      \centering
+      \includegraphics[width=0.8\textwidth]{../results/extension/depth_gap_analysis.png}
+      \caption{Depth Gap Analysis: Test accuracy of CNTK-GAP vs CNTK-Vanilla across varying network depths ($N_{train} = 200$, $N_{test} = 100$).}
+      \label{fig:depth_gap}
+\end{figure}
+
+Our analysis reveals two trends:
+\begin{itemize}
+      \item \textbf{Persistent GAP Advantage:} Across all tested depths, the GAP architecture consistently outperforms the Vanilla architecture.
+      \item \textbf{Diminishing Returns with Depth:} Unlike finite CNNs, where accuracy typically improves significantly with depth, the performance of the CNTK models in our low-data regime shows signs of plateauing earlier. This aligns with the authors' observation that depth affects CNTKs differently than finite networks, where "extra-wideness" helps optimization but infinite depth does not necessarily guarantee better generalization.
+\end{itemize}
+
+These experiments illustrate that while the CNTK captures the behavior of infinitely wide networks, the architectural choice (specifically the inclusion of pooling) remains a critical factor for performance.
 
 
 % ==============================================================================
 % SECTION : CONCLUSION AND DISCUSSION
 % ==============================================================================
 \section{Conclusion and Discussion}
+In this report, we examined the theoretical and practicaal contributions of Arora et al. regarding the exact computation of the Convolutional Neural Tangent Kernel (CNTK). By implementing the recursive covariance propagation algorithm, we successfully reproduced the structural advantages of the Global Average Pooling (GAP) architecture and explored the effects of depth in the infinite-width regime.
 
+\subsection{Summary of Findings}
+Our reproduction confirms the paper's primary algorithmic claim: it is possible to compute the exact NTK for convolutional networks efficiently without relying on Monte Carlo approximations.
+\begin{itemize}
+      \item \textbf{Architectural Impact:} We verified that the inclusion of Global Average Pooling significantly enhances kernel performance, yielding a relative accuracy improvement of $48\%$ in our low-data regime.
+      \item \textbf{Depth Behavior:} Our experiments suggest that while depth can improve performance, infinite-width networks exhibit distinct scaling characteristics compared to finite networks, often plateauing earlier.
+\end{itemize}
 
+\subsection{Critical Discussion}
+While the exact CNTK establishes a powerful benchmark for kernel methods, reaching $77\%$ accuracy on the full CIFAR-10 dataset, several critical points emerge from both the paper and our analysis:
+
+\textbf{The Performance Gap and Feature Learning:} Despite the exact computation, there remains a persistent performance gap ($\approx 5-6\%$) between the infinite CNTK and its finite-width counterpart (CNN-GAP). As noted by the authors, this implies that finite width has its benefits. The fixed nature of the NTK kernel prevents it from adapting features to the data, a key advantage of finite-width networks trained via gradient descent. This suggests that the lazy training regime described by the NTK does not fully capture the success of modern deep learning.
+
+\textbf{Computational Feasibility:} The authors claim efficiency, but the computational cost of the exact algorithm scales quadratically with the number of samples ($O(N^2)$) due to the kernel matrix construction. While feasible for CIFAR-10 on high-end GPUs, this approach becomes intractable for larger datasets like ImageNet without approximation. Our own reproduction was limited to a very small subset ($N=200$) precisely due to these compute constraints, highlighting that while the algorithm is exact, its scalability differs fundamentally from the linear scaling ($O(N)$) of standard neural network training.
+
+\textbf{Conclusion:} The paper "On Exact Computation with an Infinitely Wide Neural Net" successfully bridges the gap between deep learning architectures and kernel methods. It provides a rigorous tool to study the infinite width limit, proving that such networks are powerful classifiers in their own right. However, the remaining performance gap serves as evidence that the representational power of deep learning lies not just in over-parametrization, but in the feature learning dynamics that occur away from the infinite limit.  
 
 % ==============================================================================
 % SECTION : BIBLIOGRAPHY
@@ -156,9 +204,9 @@ While the original paper scales the exact CNTK computation to the full CIFAR-10 
 % ==============================================================================
 % SECTION : APPENDIX
 % ==============================================================================
-\newpage
-\appendix
-\section{Appendix: Appendix section}\label{sec:appendix}
+% \newpage
+% \appendix
+% \section{Appendix: Appendix section}\label{sec:appendix}
 
 
 \end{document}
