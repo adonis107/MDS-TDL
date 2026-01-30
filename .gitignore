@@ -15,10 +15,9 @@
 *.xsim
 
 .venv/
-archive/
 __pycache__/
 
+archive/
 data/
-
 documents/
 *.md
